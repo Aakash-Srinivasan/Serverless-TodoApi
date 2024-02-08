@@ -1,0 +1,59 @@
+service: serverless-todo-dynamodb
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-south-1
+  environment:
+    DYNAMODB_TABLE: todos-table # Match with your table name
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:ap-south-1:833752030816:table/todos-table"
+
+functions:
+  app:
+    handler: index.handler
+    events:
+      - http:
+          path: /todos
+          method: GET
+      - http:
+          path: /todos
+          method: POST
+      - http:
+          path: /todos/{id}
+          method: GET
+      - http:
+          path: /todos/{id}
+          method: PUT
+      - http:
+          path: /todos/{id}
+          method: DELETE
+
+plugins:
+  - serverless-offline
+
+resources:
+  Resources:
+    TodosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: todos-table # Change this to your desired table name
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
